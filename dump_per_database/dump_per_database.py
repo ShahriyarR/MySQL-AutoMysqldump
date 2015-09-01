@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/opt/Python-3.3.2/bin/python3
 
 import configparser
 import subprocess
@@ -8,6 +8,7 @@ from datetime import datetime
 import time
 import logging
 import sys
+import re
 
 
 class MysqlDumper:
@@ -17,7 +18,7 @@ class MysqlDumper:
 
     """
 
-    def __init__(self, conf='/home/MySQL-AutoXtraBackup/dump_per_database/bck.conf'):
+    def __init__(self, conf='/home/MySQL-AutoMysqldump/dump_per_database/bck.conf'):
 
         con = configparser.ConfigParser()
         con.read(conf)
@@ -27,6 +28,13 @@ class MysqlDumper:
         self.mysql = con[DB]['mysql']
         self.mycnf = con[DB]['mycnf']
         self.myuseroption = con[DB]['useroption']
+
+        self.password_reg = re.search(r'\-\-password\=(.*)[\s]--single', self.myuseroption)
+        self.user_reg = re.search(r'\-\-user\=(.*)[\s]--password', self.myuseroption)
+
+        self.password = self.password_reg.group(1)
+        self.user = self.user_reg.group(1)
+
 
 
         BCK = bolme[1]
@@ -42,22 +50,8 @@ class MysqlDumper:
         else:
             print("Full Directory exists")
 
-        self.database_names = [ 'ailem_db2',
-                                'apa_az',
-                                'apa_banners',
-                                'apa_tv',
-                                'apasport_az',
-                                'apasport_ru',
-                                'arapa_db',
-                                'enapa_db',
-                                'frapa_db',
-                                'kulis_db',
-                                'lent_newsdb',
-                                'menbe_az',
-                                'menbe_az2',
-                                'ruapa_db',
-                                'vesti_db',
-                                'avto_db']
+        self.database_names = ['test',
+                               'mysql']
 
         for i in self.database_names:
             if not os.path.exists(self.full_dir+'/'+i):
@@ -93,8 +87,11 @@ class MysqlDumper:
         file_name = date1 + '_' + database_name
 
         # Taking Full backup
-        command = '%s %s  --databases %s --result-file=%s/%s.sql' % (self.backup_tool,
-                                                                     self.myuseroption, database_name,
+        command = "%s --user=%s --password='%s'  --databases %s --result-file=%s/%s.sql" % \
+                                                                    (self.backup_tool,
+                                                                     self.user,
+                                                                     self.password,
+                                                                     database_name,
                                                                      self.full_dir+'/'+database_name, file_name)
         #arg = shlex.split(command)
         command = shlex.split(command)
@@ -181,7 +178,7 @@ class Logger:
 
         # create a file handler
 
-        self.handler = logging.FileHandler('/home/mysql-backup/backup_dir/per_database/mysqldump_backup.log')
+        self.handler = logging.FileHandler('/home/MySQL-AutoMysqldump/backup_dir/per_database/mysqldump_backup.log')
         self.handler.setLevel(logging.INFO)
 
         # create a logging format

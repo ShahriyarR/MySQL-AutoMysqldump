@@ -1,4 +1,4 @@
-#!/usr/local/bin/python3
+#!/opt/Python-3.3.2/bin/python3
 
 import configparser
 import subprocess
@@ -17,7 +17,7 @@ class MysqlDumper:
 
     """
 
-    def __init__(self, conf='/home/mysql-backup/slave_dump_backup_script/bck.conf'):
+    def __init__(self, conf='/home/MySQL-AutoMysqldump/slave_dump_backup_script/bck.conf'):
 
         con = configparser.ConfigParser()
         con.read(conf)
